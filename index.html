@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Log Masuk – Dashboard Dokumen Kualiti PTSS</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.6;color:#1f2328;min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a3a5c 0%,#0d5ca8 100%)}
+a{text-decoration:none;color:inherit}
+.login-wrapper{width:100%;max-width:420px;padding:1rem}
+.login-card{background:#fff;border-radius:12px;padding:2.5rem 2rem;box-shadow:0 8px 32px rgba(0,0,0,0.18)}
+.login-logo{text-align:center;margin-bottom:2rem}
+.logo-circle{font-size:3rem;margin-bottom:0.5rem}
+.login-logo h1{font-size:1.25rem;font-weight:700;color:#1a3a5c}
+.login-logo .subtitle{font-size:0.82rem;color:#57606a;margin-top:0.25rem}
+.form-group{display:flex;flex-direction:column;gap:0.35rem;margin-bottom:0.9rem}
+.form-group label{font-size:0.82rem;font-weight:600;color:#1f2328}
+input[type="text"],input[type="password"]{padding:0.5rem 0.75rem;border:1px solid #d0d7de;border-radius:6px;font-size:0.85rem;color:#1f2328;background:#fff;width:100%;transition:border-color 0.15s}
+input:focus{outline:none;border-color:#0d5ca8;box-shadow:0 0 0 3px rgba(13,92,168,0.12)}
+.input-wrap{position:relative}
+.toggle-pwd{position:absolute;right:0.5rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;padding:0.25rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:0.35rem;padding:0.5rem 1.1rem;border-radius:6px;font-size:0.85rem;font-weight:600;cursor:pointer;border:1.5px solid transparent;transition:background 0.15s;white-space:nowrap;width:100%;margin-bottom:0.5rem}
+.btn-primary{background:#0d5ca8;color:#fff;border-color:#0d5ca8}
+.btn-primary:hover{background:#0a4a87}
+.btn-secondary{background:#f7f8fa;color:#1f2328;border-color:#d0d7de}
+.btn-secondary:hover{background:#e5e7eb}
+.alert{padding:0.65rem 1rem;border-radius:6px;font-size:0.83rem;margin-bottom:1rem;font-weight:500}
+.alert-error{background:#fee2e2;color:#dc2626;border:1px solid #fca5a5}
+.attempts-info{font-size:0.78rem;color:#d97706;margin-bottom:0.5rem}
+.divider{text-align:center;color:#57606a;font-size:0.78rem;margin:1rem 0;position:relative}
+.divider::before,.divider::after{content:'';position:absolute;top:50%;width:43%;height:1px;background:#e5e7eb}
+.divider::before{left:0}
+.divider::after{right:0}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="login-wrapper">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-circle">🏛️</div>
+      <h1>Dashboard Dokumen Kualiti</h1>
+      <p class="subtitle">Politeknik Tuanku Syed Sirajuddin</p>
+    </div>
+    <div id="login-error" class="alert alert-error hidden">⚠️ ID atau Kata Laluan tidak sah. Cuba lagi.</div>
+    <div id="login-locked" class="alert alert-error hidden">🔒 Akaun dikunci. Terlalu banyak cubaan gagal.</div>
+    <button id="btn-unlock" class="btn btn-secondary hidden">🔓 Buka Kunci &amp; Cuba Semula</button>
+    <form id="loginForm" autocomplete="off">
+      <div class="form-group">
+        <label for="userId">👤 ID Pengguna</label>
+        <input type="text" id="userId" placeholder="Masukkan ID Pengguna" required/>
+      </div>
+      <div class="form-group">
+        <label for="password">🔑 Kata Laluan</label>
+        <div class="input-wrap">
+          <input type="password" id="password" placeholder="Masukkan Kata Laluan" required/>
+          <button type="button" id="togglePwd" class="toggle-pwd">👁️</button>
+        </div>
+      </div>
+      <div id="attempts-info" class="attempts-info hidden"></div>
+      <button type="submit" class="btn btn-primary">Log Masuk</button>
+    </form>
+    <div class="divider">atau</div>
+    <a href="public.html" class="btn btn-secondary">👁️ Paparan Awam (Tanpa Log Masuk)</a>
+  </div>
+</div>
+<script>
+const VALID_ID='KUALITI-PTSS',VALID_PWD='kualiti@ptss2025',MAX_ATTEMPTS=3,AUTH_KEY='ptss_auth',LOCK_KEY='ptss_locked',ATTEMPTS_KEY='ptss_attempts';
+const form=document.getElementById('loginForm'),errorEl=document.getElementById('login-error'),lockedEl=document.getElementById('login-locked'),attemptsEl=document.getElementById('attempts-info'),toggleBtn=document.getElementById('togglePwd'),pwdInput=document.getElementById('password'),unlockBtn=document.getElementById('btn-unlock');
+if(sessionStorage.getItem(AUTH_KEY)==='true')window.location.href='dashboard.html';
+function checkLocked(){const locked=localStorage.getItem(LOCK_KEY);if(locked==='true'){lockedEl.classList.remove('hidden');unlockBtn.classList.remove('hidden');form.querySelector('button[type="submit"]').disabled=true;return true;}unlockBtn.classList.add('hidden');return false;}
+checkLocked();
+unlockBtn.addEventListener('click',()=>{localStorage.removeItem(LOCK_KEY);localStorage.removeItem(ATTEMPTS_KEY);lockedEl.classList.add('hidden');unlockBtn.classList.add('hidden');errorEl.classList.add('hidden');attemptsEl.classList.add('hidden');form.querySelector('button[type="submit"]').disabled=false;});
+toggleBtn.addEventListener('click',()=>{if(pwdInput.type==='password'){pwdInput.type='text';toggleBtn.textContent='🙈';}else{pwdInput.type='password';toggleBtn.textContent='👁️';}});
+form.addEventListener('submit',function(e){e.preventDefault();if(checkLocked())return;const id=document.getElementById('userId').value.trim().toUpperCase();const pwd=pwdInput.value.toLowerCase();if(id===VALID_ID&&pwd===VALID_PWD){localStorage.removeItem(ATTEMPTS_KEY);localStorage.removeItem(LOCK_KEY);sessionStorage.setItem(AUTH_KEY,'true');window.location.href='dashboard.html';}else{let attempts=parseInt(localStorage.getItem(ATTEMPTS_KEY)||'0')+1;localStorage.setItem(ATTEMPTS_KEY,attempts);errorEl.classList.remove('hidden');lockedEl.classList.add('hidden');if(attempts>=MAX_ATTEMPTS){localStorage.setItem(LOCK_KEY,'true');lockedEl.classList.remove('hidden');unlockBtn.classList.remove('hidden');errorEl.classList.add('hidden');attemptsEl.classList.add('hidden');form.querySelector('button[type="submit"]').disabled=true;}else{const remaining=MAX_ATTEMPTS-attempts;attemptsEl.classList.remove('hidden');attemptsEl.textContent=`⚠️ ${remaining} cubaan lagi sebelum akaun dikunci.`;}}});
+</script>
+</body>
+</html>
